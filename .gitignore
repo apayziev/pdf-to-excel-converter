@@ -1,0 +1,34 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# PyInstaller build folders
+build/
+dist/
+*.spec
+
+# VSCode settings
+.vscode/
+
+# Mac/Linux OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# PDF test files (optional)
+ActiveReports Document.pdf
+
+# JetBrains IDE
+.idea/
