@@ -2,11 +2,17 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 import threading
-import subprocess
 import sys
 import os
+import io
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+
+# Import the extraction function directly
+try:
+    from extract_to_excel import main as extract_main
+except ImportError:
+    extract_main = None
 
 
 class PDFToExcelGUI:
@@ -76,42 +82,54 @@ class PDFToExcelGUI:
 
     def run_script(self, pdf_path):
         try:
-            script_path = os.path.join(os.path.dirname(__file__), "extract_to_excel.py")
+            # Redirect stdout to capture print statements
+            old_stdout = sys.stdout
+            old_stderr = sys.stderr
+            sys.stdout = io.StringIO()
+            sys.stderr = io.StringIO()
 
-            # Prevent subprocess from creating a new window on Windows
-            startupinfo = None
-            if sys.platform == 'win32':
-                startupinfo = subprocess.STARTUPINFO()
-                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                startupinfo.wShowWindow = subprocess.SW_HIDE
+            # Run the extraction function directly
+            try:
+                extract_main(pdf_path)
+                success = True
+                error_msg = None
+            except Exception as e:
+                success = False
+                error_msg = str(e)
 
-            process = subprocess.Popen(
-                [sys.executable, script_path, pdf_path],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                startupinfo=startupinfo,
-                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-            )
+            # Capture output
+            output = sys.stdout.getvalue()
+            errors = sys.stderr.getvalue()
+            
+            # Restore stdout/stderr
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
 
-            for line in process.stdout:
-                self.log(line.strip())
-                if "Excel file created:" in line:
-                    out_file = line.split("Excel file created:")[1].strip()
-                    self.output_var.set(out_file)
+            # Display output in log area
+            for line in output.split('\n'):
+                if line.strip():
+                    self.log(line.strip())
+                    if "Excel file created:" in line:
+                        out_file = line.split("Excel file created:")[1].strip()
+                        self.output_var.set(out_file)
 
-            process.wait()
+            if errors:
+                for line in errors.split('\n'):
+                    if line.strip():
+                        self.log(line.strip())
+
             self.progress.stop()
 
-            if process.returncode == 0:
+            if success:
                 self.log("\n✅ Finished successfully!")
                 self.log("Closing in 3 seconds...")
                 self.root.after(3000, self.root.destroy)
             else:
-                self.log("❌ An error occurred!")
+                self.log(f"❌ An error occurred: {error_msg}")
 
         except Exception as e:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
             self.progress.stop()
             self.log(f"❌ Exception: {e}")
 
