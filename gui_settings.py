@@ -78,12 +78,21 @@ class PDFToExcelGUI:
         try:
             script_path = os.path.join(os.path.dirname(__file__), "extract_to_excel.py")
 
+            # Prevent subprocess from creating a new window on Windows
+            startupinfo = None
+            if sys.platform == 'win32':
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
+
             process = subprocess.Popen(
                 [sys.executable, script_path, pdf_path],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1
+                bufsize=1,
+                startupinfo=startupinfo,
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
             )
 
             for line in process.stdout:
