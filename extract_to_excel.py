@@ -88,12 +88,24 @@ def format_date_range(date_range_str):
 
 
 def generate_output_filename(pdf_path, date_range):
-    if date_range:
-        pdf_name = pdf_path.replace('.pdf', '')
-        formatted_date = format_date_range(date_range)
-        return f"{pdf_name} {formatted_date}.xlsx".replace('  ', ' ')
+    # Get the base filename without path and extension
+    pdf_basename = os.path.basename(pdf_path).replace('.pdf', '')
+    
+    # Get the directory where the executable/script is located
+    if getattr(sys, 'frozen', False):
+        # Running as compiled executable
+        exe_dir = os.path.dirname(sys.executable)
     else:
-        return pdf_path.replace('.pdf', '.xlsx')
+        # Running as script
+        exe_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    if date_range:
+        formatted_date = format_date_range(date_range)
+        filename = f"{pdf_basename} {formatted_date}.xlsx".replace('  ', ' ')
+    else:
+        filename = f"{pdf_basename}.xlsx"
+    
+    return os.path.join(exe_dir, filename)
 
 
 def extract_service_types_from_pdf(pdf_path):

@@ -122,8 +122,6 @@ class PDFToExcelGUI:
 
             if success:
                 self.log("\n✅ Finished successfully!")
-                self.log("Closing in 3 seconds...")
-                self.root.after(3000, self.root.destroy)
             else:
                 self.log(f"❌ An error occurred: {error_msg}")
 
