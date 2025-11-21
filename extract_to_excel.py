@@ -72,7 +72,7 @@ def extract_report_info(pdf_path):
 
 
 def format_date_range(date_range_str):
-    """Convert date range format from 'DD MMM YYYY - DD MMM YYYY' to 'DD-MM-YYYY to DD-MM-YYYY'"""
+    """Convert date range format from 'DD MMM YYYY - DD MMM YYYY' to 'MM-DD-YYYY to MM-DD-YYYY'"""
     parts = date_range_str.split(' - ')
     if len(parts) != 2:
         return date_range_str
@@ -81,7 +81,7 @@ def format_date_range(date_range_str):
         formatted_dates = []
         for date_str in parts:
             date_obj = datetime.datetime.strptime(date_str.strip(), '%d %b %Y')
-            formatted_dates.append(date_obj.strftime('%d-%m-%Y'))
+            formatted_dates.append(date_obj.strftime('%m-%d-%Y'))
         return f"{formatted_dates[0]} to {formatted_dates[1]}"
     except ValueError:
         return date_range_str
